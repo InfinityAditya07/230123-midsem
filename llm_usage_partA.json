@@ -1,0 +1,63 @@
+{
+    "student_metadata": {
+      "name": "ADITYA RAJ SHARMA",
+      "roll_number": "230123",
+      "course": "Advanced Machine Learning",
+      "exam": "Mid-Semester Examination",
+      "part": "Part A",
+      "submission_date": "2026-03-03",
+      "institute": "Rishihood University",
+      "program": "B.Tech (CS AND AI)"
+    },
+  
+    "llm_tools_used": [
+      {
+        "tool_name": "ChatGPT",
+        "model": "GPT-5",
+        "provider": "OpenAI"
+      }
+    ],
+  
+    "full_llm_interaction_log": [
+      {
+        "interaction_id": 1,
+        "date": "2026-03-02",
+        "tool_name": "ChatGPT",
+        "model": "GPT-5",
+        "purpose": "Finding a suitable research paper from 2009–2012 published in a CORE A* venue aligned with classical machine learning methods (SVM, GMM, or ARIMA) for the Mid-Semester Part A requirement.",
+        "prompt": "Suggest a CORE A* machine learning research paper published between 2009 and 2012 whose primary contribution is based on Support Vector Machines, Gaussian Mixture Models, or classical statistical ML methods and that is feasible for reproduction and explanation.",
+        "llm_response_used": "Yes",
+        "how_it_helped": "The model helped identify suitable research papers that satisfy the assignment constraints such as publication year, venue ranking, and alignment with classical machine learning techniques. It also helped compare candidate papers and choose a paper with clear methodology and reproducible experiments.",
+        "student_verification": "Verified the publication venue, year, and paper authenticity through the official journal/conference page and by checking the CORE ranking portal and publisher website.",
+        "confidence_level": 5
+      }
+    ],
+  
+    "top_5_prompts": [
+      {
+        "rank": 1,
+        "interaction_id": 1,
+        "prompt": "Suggest a CORE A* machine learning research paper published between 2009 and 2012 based on SVM, GMM, or classical ML methods.",
+        "why_important": "Helped identify papers that satisfy the strict venue, year, and method requirements of the assignment."
+      },
+      {
+        "rank": 2,
+        "interaction_id": 1,
+        "prompt": "Which classical ML papers between 2009–2012 are easier to understand and reproduce for a student project?",
+        "why_important": "Helped evaluate implementation difficulty and reproducibility for Parts B and C."
+      },
+      {
+        "rank": 3,
+        "interaction_id": 1,
+        "prompt": "Explain the core idea and contribution of the selected paper in simple terms.",
+        "why_important": "Helped understand the paper’s main algorithm and prepare for deeper analysis."
+      }
+    ],
+  
+    "student_declaration": {
+      "statement": "I declare that this JSON file contains a complete and honest record of my LLM usage for Part A.",
+      "understanding_acknowledged": true,
+      "signature": "ADITYA RAJ SHARMA",
+      "date": "2026-03-03"
+    }
+  }
