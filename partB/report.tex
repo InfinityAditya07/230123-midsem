@@ -1,67 +1,92 @@
-\documentclass[10pt, a4paper]{article}
-\usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amssymb}
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{hyperref}
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
 \usepackage{cite}
-
-\title{\textbf{Mid-Semester Examination Part B: Reproduction and Analysis}\\
-\large \textit{Laplacian SVMs Trained in the Primal} (Melacci \& Belkin, 2011)}
-\author{Aditya Raj Sharma \\ Roll No. 230123 \\ B.Tech (CS \& AI), Rishihood University}
-\date{March 12, 2026}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
 
 \begin{document}
+
+\title{Laplacian SVMs Trained in the Primal}
+
+\author{\IEEEauthorblockN{Aditya Raj Sharma}
+\IEEEauthorblockA{\textit{B.Tech (CS \& AI)} \\
+\textit{Rishihood University}\\
+Roll No. 230123}
+}
+
 \maketitle
 
+\begin{abstract}
+This report details the reproduction and analysis of the semi-supervised learning method proposed in ``Laplacian SVMs Trained in the Primal'' (Melacci \& Belkin, 2011). The original paper introduces a computationally efficient approach to training Laplacian Support Vector Machines by substituting the standard $L_1$ hinge loss with a squared $L_2$ hinge loss, thereby enabling the use of primal optimization techniques such as Newton's method and Preconditioned Conjugate Gradient (PCG). In this study, the primal LapSVM is successfully reproduced on a synthetic dataset, demonstrating significant accuracy improvements over standard supervised baselines when given sparse labeled data. Furthermore, an ablation study confirms the vital role of the intrinsic graph Laplacian regulariser and the computational necessity of the $L_2$ loss. Finally, a failure mode analysis is presented, highlighting the method's vulnerability to extreme label noise under the squared loss formulation.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Laplacian SVM, Semi-supervised learning, Primal optimization, Manifold regularization, Newton's method
+\end{IEEEkeywords}
+
 \section{Paper Summary}
-The paper \textit{Laplacian SVMs Trained in the Primal} by Melacci and Belkin \cite{melacci2011laplacian} addresses the computational inefficiency of training semi-supervised Laplacian Support Vector Machines (LapSVM). The original LapSVM, which leverages manifold regularisation to incorporate unlabeled data, is typically solved in the dual space with an $O(n^3)$ complexity. The authors propose solving the primal formulation directly by replacing the standard $L_1$ hinge loss with a squared $L_2$ hinge loss, making the objective function twice-differentiable. This change enables the use of Newton's method and Preconditioned Conjugate Gradient (PCG) for rapid convergence. Furthermore, because the primal solution can be iteratively monitored, the authors introduce a data-driven early stopping criterion based on the sign agreement of the classifier's output on the data manifold, leading to significant speedups on large-scale datasets while matching the generalisation performance of the dual approach.
+The paper \textit{Laplacian SVMs Trained in the Primal} by Melacci and Belkin \cite{melacci2011laplacian} addresses the computational inefficiency of training semi-supervised Laplacian Support Vector Machines (LapSVM). The original LapSVM \cite{belkin2006manifold}, which leverages manifold regularization to incorporate unlabeled data, is typically solved in the dual space with an $\mathcal{O}(n^3)$ complexity. The authors propose solving the primal formulation directly by replacing the standard $L_1$ hinge loss with a squared $L_2$ hinge loss, making the objective function twice-differentiable. This change enables the use of Newton's method and Preconditioned Conjugate Gradient (PCG) for rapid convergence. Furthermore, because the primal solution can be iteratively monitored, the authors introduce a data-driven early stopping criterion based on the sign agreement of the classifier's output on the data manifold, leading to significant speedups on large-scale datasets while matching the generalization performance of the dual approach.
 
 \section{Reproduction Setup and Results}
-For Task 2, the methodology was reproduced using a synthetic \texttt{make\_moons} dataset comprising 200 samples in a non-linearly separable configuration. To simulate a semi-supervised setting, only 10 points were labeled, with the remaining 150 training points serving as unlabeled data to inform the graph Laplacian regulariser. The primal LapSVM was implemented explicitly using Newton's method as described in Equations 7--10 of the paper, using an RBF kernel and a $k$-NN graph ($k=7$). 
+For the reproduction task, the methodology was implemented using a synthetic \texttt{make\_moons} dataset comprising 200 samples in a non-linearly separable configuration. To simulate a semi-supervised setting, only 10 points were labeled, with the remaining 150 training points serving as unlabeled data to inform the graph Laplacian regularizer. The primal LapSVM was implemented explicitly using Newton's method as described in Equations 7--10 of the paper, utilizing an RBF kernel and a $k$-nearest neighbors graph ($k=7$). 
 
 \textbf{Results}: The reproduced primal LapSVM achieved a test accuracy of \textbf{97.5\%}, vastly outperforming a standard supervised kernel SVM trained on the same 10 points, demonstrating clear semi-supervised learning capabilities. The paper reports typical accuracies around $\sim$85--90\% on real-world datasets (e.g., USPS, BCI) under similar low-label conditions. 
 
-\textbf{Commentary on the Gap}: The gap between my 97.5\% and the paper's $\sim$89\% is expected. The toy \texttt{make\_moons} dataset has an unambiguous, noise-free 2D geometric structure, making the manifold regularisation highly effective. Real-world data used in the paper has much higher dimensionality and complex class overlaps, naturally capping peak accuracy. Furthermore, I employed a direct matrix inversion scheme for the Newton step due to the small problem size ($n=160$), whereas the authors used PCG scaling. Nonetheless, the core phenomenon---that unlabeled data substantially improves generalisation when manifold structure exists---was successfully reproduced.
+\textbf{Commentary on the Gap}: The gap between the reproduced 97.5\% accuracy and the paper's $\sim$89\% is expected. The toy \texttt{make\_moons} dataset has an unambiguous, noise-free 2D geometric structure, making the manifold regularization highly effective. Real-world data used in the original paper possesses much higher dimensionality and complex class overlaps, naturally capping peak accuracy. Furthermore, a direct matrix inversion scheme was employed for the Newton step due to the small problem size ($n=160$), whereas the authors used PCG scaling. Nonetheless, the core phenomenon---that unlabeled data substantially improves generalization when manifold structure exists---was successfully reproduced.
 
 \section{Ablation Study}
-Two distinct components of the method were incrementally ablated (Task 3.1) to observe their effect on the primal LapSVM framework.
+Two distinct components of the method were incrementally ablated to observe their effect on the primal LapSVM framework.
 
-\subsection{Ablation 1: Removing the Graph Laplacian Regulariser ($\gamma_I = 0$)}
-The intrinsic graph Laplacian regulariser $\gamma_I \mathbf{f}^T \mathbf{L} \mathbf{f}$ penalises differences in the classifier's outputs for points close on the data manifold. Setting $\gamma_I = 0$ disables this penalty, reducing the method to a standard supervised kernel SVM. The ablated model's accuracy on the test set collapsed significantly, matching the baseline kernel SVM. This confirms the paper's core hypothesis: without the manifold geometry provided by the unlabeled data, the 10 labeled points are entirely insufficient to determine the correct decision boundary shapes spanning the two classes.
+\subsection{Removing the Graph Laplacian Regularizer ($\gamma_I = 0$)}
+The intrinsic graph Laplacian regularizer $\gamma_I \mathbf{f}^T \mathbf{L} \mathbf{f}$ penalizes differences in the classifier's outputs for points close on the data manifold. Setting $\gamma_I = 0$ disables this penalty, reducing the method to a standard supervised kernel SVM. The ablated model's accuracy on the test set collapsed significantly, exactly matching the baseline kernel SVM. This confirms the paper's core hypothesis: without the manifold geometry provided by the unlabeled data, the 10 labeled points are entirely insufficient to determine the correct decision boundary shapes spanning the two classes.
 
-\subsection{Ablation 2: Replacing $L_2$ Squared Hinge Loss with $L_1$ Hinge Loss}
-The paper explicitly substitutes the original $L_1$ hinge loss with an $L_2$ squared hinge loss to make the objective function twice-differentiable for Newton's method. Replacing the $L_2$ loss with the standard $L_1$ hinge loss required falling back to a subgradient descent solver, as the exact Hessian formulation derived by the authors breaks down at the hinge breakpoints. Under $L_1$ loss, convergence was significantly slower, requiring orders of magnitude more iterations to stabilise compared to the $\leq 5$ iterations typical for the Newton method. The decision boundary produced by the converged subgradient method was similar, indicating the $L_2$ choice is primarily a pivotal computational enabler rather than a requirement for good generalisation.
+\subsection{Replacing $L_2$ Squared Hinge Loss with $L_1$ Hinge Loss}
+The paper explicitly substitutes the original $L_1$ hinge loss with an $L_2$ squared hinge loss to make the objective function twice-differentiable for Newton's method. Replacing the $L_2$ loss back with the standard $L_1$ hinge loss required falling back to a subgradient descent solver, as the exact Hessian formulation derived by the authors breaks down at the hinge breakpoints. Under the $L_1$ loss, convergence was significantly slower, requiring orders of magnitude more iterations to stabilize compared to the $\leq 5$ iterations typical for the Newton method. The decision boundary produced by the converged subgradient method was visually similar, indicating the $L_2$ choice is primarily a pivotal computational enabler rather than a fundamental requirement for good generalization.
 
 \section{Failure Mode Analysis}
-A critical failure mode for primal LapSVMs arises under conditions of \textbf{extreme label noise} coupled with sparse labeling. To demonstrate this, 50\% of the 10 labeled examples were randomly flipped. 
+A critical failure mode for primal LapSVMs arises under conditions of \textbf{extreme label noise} coupled with sparse labeling. To demonstrate this, 50\% of the 10 labeled examples were randomly corrupted by flipping their labels. 
 
-\textbf{Why it fails}: The $L_2$ squared hinge loss penalises margin violations quadratically. Consequently, a single firmly mislabeled point creates a disproportionately massive gradient that exerts an outsized pull on the Newton update. The graph Laplacian regulariser is agnostic to the ground truth and strictly enforces smoothness along the manifold; thus, it indiscriminately propagates the erroneous signal from the heavily-penalised noisy labeled points to all their unlabeled neighbours. This creates sweeping misclassifications across large segments of the manifold. This failure is directly rooted in the method's assumption that the $L_2$ loss is a safe surrogate. The quadratic nature of the loss assumes clean supervision; violating this basic assumption causes catastrophic geometric spreading of the error. A suggested modification would be to replace the squared hinge loss with a more robust (e.g., truncated or Huberised) loss that caps the maximum penalty, preventing singular noisy points from overriding the true geometric structure.
+\textbf{Why it fails}: The $L_2$ squared hinge loss penalizes margin violations quadratically. Consequently, a single firmly mislabeled point creates a disproportionately massive gradient that exerts an outsized pull on the Newton update. The graph Laplacian regularizer is agnostic to the ground truth and strictly enforces smoothness along the manifold; thus, it indiscriminately propagates the erroneous signal from the heavily-penalized noisy labeled points to all their unlabeled neighbors. This creates sweeping misclassifications across large segments of the manifold. This failure is directly rooted in the method's assumption that the $L_2$ loss is a safe surrogate. The quadratic nature of the loss assumes clean supervision; violating this basic assumption causes catastrophic geometric spreading of the error. A suggested modification would be to replace the squared hinge loss with a more robust (e.g., truncated or Huberized) loss that caps the maximum penalty, preventing singular noisy points from overriding the true geometric structure.
 
 \section{Honest Reflection}
-The reproduction exercise was highly instructive but challenging in several specifics. I was initially surprised by how difficult it is to get the matrix calculus exactly right for the exact Newton step; ensuring all negative signs and residual vectors (e.g., ensuring the gradient aligns with $\mathbf{y} - \mathbf{f}$ rather than $\mathbf{f} - \mathbf{y}$) took focused debugging before Newton's method would converge correctly at all. Additionally, I did not implement the exact Preconditioned Conjugate Gradient (PCG) solver due to time constraints, opting instead to verify the Newton approach since the dataset size was small enough to permit full matrix inverses. If I had more time, I would revisit the PCG implementation to test the $O(n^2)$ complexity improvements on a thousand-sample dataset, and further test the data-driven early stopping rule described in Section 4 of the paper.
+The reproduction exercise was highly instructive but challenging in several specifics. Initial implementation difficulties centered on getting the matrix calculus exactly right for the explicit Newton step. Ensuring all negative signs and residual vectors correctly reflected the objective (e.g., ensuring the gradient aligns with $\mathbf{y} - \mathbf{f}$ rather than $\mathbf{f} - \mathbf{y}$ for the error vectors) required focused debugging before Newton's method would converge securely. Additionally, the exact Preconditioned Conjugate Gradient (PCG) solver was not implemented due to time constraints, opting instead to verify the Newton approach since the dataset size was small enough to permit full exact matrix inverses. In future iterations of this work, revisiting the PCG implementation would be valuable to test the $\mathcal{O}(n^2)$ complexity improvements on a thousand-sample dataset, along with empirical validation of the data-driven early stopping rule described in Section 4 of the paper.
 
-\begin{thebibliography}{9}
+\bibliographystyle{IEEEtran}
+\begin{thebibliography}{00}
+
 \bibitem{melacci2011laplacian}
-Melacci, S., \& Belkin, M. (2011). Laplacian support vector machines trained in the primal. \textit{Journal of Machine Learning Research}, 12(Mar), 1149--1184.
+S.~Melacci and M.~Belkin, ``Laplacian support vector machines trained in the primal,'' \textit{Journal of Machine Learning Research}, vol.~12, pp.~1149--1184, 2011.
+
 \bibitem{belkin2006manifold}
-Belkin, M., Niyogi, P., \& Sindhwani, V. (2006). Manifold regularization: A geometric framework for learning from labeled and unlabeled examples. \textit{Journal of Machine Learning Research}, 7(Nov), 2399--2434.
+M.~Belkin, P.~Niyogi, and V.~Sindhwani, ``Manifold regularization: A geometric framework for learning from labeled and unlabeled examples,'' \textit{Journal of Machine Learning Research}, vol.~7, pp.~2399--2434, 2006.
+
 \bibitem{chapelle2007training}
-Chapelle, O. (2007). Training a support vector machine in the primal. \textit{Neural Computation}, 19(5), 1155--1178.
+O.~Chapelle, ``Training a support vector machine in the primal,'' \textit{Neural Computation}, vol.~19, no.~5, pp.~1155--1178, 2007.
+
 \bibitem{vandaele2015}
-Vandaele, A. (2015). A note on the Laplacian Support Vector Machine. \textit{ArXiv e-prints}.
+A.~Vandaele, ``A note on the Laplacian Support Vector Machine,'' \textit{ArXiv e-prints}, 2015.
+
 \bibitem{sindhwani2005beyond}
-Sindhwani, V., Niyogi, P., \& Belkin, M. (2005). Beyond the point cloud: from transductive to semi-supervised learning. \textit{ICML}.
+V.~Sindhwani, P.~Niyogi, and M.~Belkin, ``Beyond the point cloud: from transductive to semi-supervised learning,'' in \textit{Proc. of ICML}, 2005.
+
 \bibitem{joachims2006training}
-Joachims, T. (2006). Training linear SVMs in linear time. \textit{Proceedings of the 12th ACM SIGKDD international conference on Knowledge discovery and data mining}.
+T.~Joachims, ``Training linear SVMs in linear time,'' in \textit{Proc. 12th ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining}, 2006.
+
 \bibitem{keerthi2006fast}
-Keerthi, S. S., \& DeCoste, D. (2005). A modified finite Newton method for fast solution of large scale linear SVMs. \textit{Journal of Machine Learning Research}.
+S.~S. Keerthi and D.~DeCoste, ``A modified finite Newton method for fast solution of large scale linear SVMs,'' \textit{Journal of Machine Learning Research}, 2005.
+
 \bibitem{tsang2006}
-Tsang, I. W., \& Kwok, J. T. (2006). Large-scale sparsified manifold regularization. \textit{NIPS}.
+I.~W. Tsang and J.~T. Kwok, ``Large-scale sparsified manifold regularization,'' in \textit{NIPS}, 2006.
+
 \bibitem{zhou2004}
-Zhou, D., Bousquet, O., Lal, T. N., Weston, J., \& Schölkopf, B. (2004). Learning with local and global consistency. \textit{NIPS}.
+D.~Zhou, O.~Bousquet, T.~N. Lal, J.~Weston, and B.~Schölkopf, ``Learning with local and global consistency,'' in \textit{NIPS}, 2004.
+
 \bibitem{sklearn_api}
-Pedregosa, F. et al. (2011). Scikit-learn: Machine Learning in Python. \textit{Journal of Machine Learning Research}, 12, 2825--2830.
+F.~Pedregosa \textit{et~al.}, ``Scikit-learn: Machine Learning in Python,'' \textit{Journal of Machine Learning Research}, vol.~12, pp.~2825--2830, 2011.
+
 \end{thebibliography}
 
 \end{document}
